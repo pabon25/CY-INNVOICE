@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Document Studio | Cypadi</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css', v=3) }}">
+</head>
+<body>
+<main class="page">
+  <header class="shell-header">
+    <a class="brand" href="/" aria-label="Cypadi Document Studio home">
+      <span class="brand-mark">C</span>
+      <span><strong>Cypadi</strong><small>DOCUMENT STUDIO</small></span>
+    </a>
+    <div class="header-note"><span class="status-dot"></span> Create a polished client document</div>
+  </header>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container" role="status">
+      {% for category, msg in messages %}
+        <div class="flash flash-{{ category }}">{{ msg }}</div>
+      {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  <section class="intro">
+    <div>
+      <p class="eyebrow">CLIENT DOCUMENTS, MADE SIMPLE</p>
+      <h1>Build a document<br><span>that feels professional.</span></h1>
+      <p class="intro-copy">Choose what you are creating, select the services and currency, then download a clean PDF ready to share.</p>
+    </div>
+    <div class="intro-art" aria-hidden="true">
+      <span class="art-sheet"></span><span class="art-sheet art-sheet-back"></span>
+      <span class="art-check">✓</span>
+    </div>
+  </section>
+
+  <form id="documentForm" method="post" enctype="multipart/form-data">
+    <section class="card setup-card">
+      <div class="section-heading">
+        <span class="step-number">01</span>
+        <div><h2>Document setup</h2><p>Choose the format and currency for this client.</p></div>
+      </div>
+      <div class="setup-grid">
+        <fieldset class="field field-full">
+          <legend>Document type</legend>
+          <div class="switcher" id="docTypeSwitcher" role="group" aria-label="Document type">
+            <button type="button" class="switch-btn active" data-type="invoice" aria-pressed="true">
+              <span class="switch-icon">▤</span><span><strong>Invoice</strong><small>Request or confirm payment</small></span>
+            </button>
+            <button type="button" class="switch-btn" data-type="contract" aria-pressed="false">
+              <span class="switch-icon">§</span><span><strong>Contract</strong><small>Set out service terms</small></span>
+            </button>
+            <button type="button" class="switch-btn" data-type="both" aria-pressed="false">
+              <span class="switch-icon">▤§</span><span><strong>Invoice + contract</strong><small>Combine both in one PDF</small></span>
+            </button>
+          </div>
+          <input type="hidden" name="doc_type" id="docTypeInput" value="invoice">
+        </fieldset>
+        <div class="field">
+          <label for="currencySelect">Document currency</label>
+          <select name="currency" id="currencySelect">
+            <option value="RWF" selected>RWF · Rwandan francs</option>
+            <option value="USD">USD · US dollars ($)</option>
+          </select>
+          <span class="hint">All selected service prices use this currency.</span>
+        </div>
+        <div class="field">
+          <label for="refNo">Document reference</label>
+          <input id="refNo" type="text" name="ref_no" placeholder="Auto-generated if left blank">
+          <span class="hint">Use your own reference or leave this blank.</span>
+        </div>
+        <div class="field">
+          <label for="docDate">Issue date</label>
+          <input id="docDate" type="date" name="date" value="{{ now }}">
+        </div>
+        <div class="field">
+          <label for="docTitle">Document heading</label>
+          <input id="docTitle" type="text" name="doc_title" value="Service Invoice">
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-heading">
+        <span class="step-number">02</span>
+        <div><h2>Provider details</h2><p>These details identify your business on the PDF.</p></div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="companyName">Business name</label>
+          <input id="companyName" type="text" name="company_name" value="Cypadi" required>
+        </div>
+        <div class="field">
+          <label for="companyEmail">Business email</label>
+          <input id="companyEmail" type="email" name="company_email" value="info@cypadi.com">
+        </div>
+        <div class="field">
+          <label for="companyPhone">Phone</label>
+          <input id="companyPhone" type="tel" name="company_phone" placeholder="+250 ...">
+        </div>
+        <div class="field">
+          <label for="companyAddress">Address</label>
+          <input id="companyAddress" type="text" name="company_address" placeholder="City, country">
+        </div>
+        <div class="field upload-field field-full">
+          <label for="companyLogo">Business logo <span class="optional">Optional</span></label>
+          <div class="upload-control"><span class="upload-icon">↑</span><input id="companyLogo" type="file" name="company_logo" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp"></div>
+          <span class="hint">PNG, JPG or WEBP. A transparent PNG works best in the document header.</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-heading">
+        <span class="step-number">03</span>
+        <div><h2>Client details</h2><p>Tell your client who the document is for.</p></div>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="customerName">Client / customer name</label>
+          <input id="customerName" type="text" name="customer_name" placeholder="Full name or business" required>
+        </div>
+        <div class="field">
+          <label for="customerContact">Email or phone</label>
+          <input id="customerContact" type="text" name="customer_contact" placeholder="Client contact details">
+        </div>
+        <div class="field field-full">
+          <label for="customerAddress">Billing address <span class="optional">Optional</span></label>
+          <input id="customerAddress" type="text" name="customer_address" placeholder="Street, city, country">
+        </div>
+      </div>
+    </section>
+
+    <section class="card services-card">
+      <div class="section-heading">
+        <span class="step-number">04</span>
+        <div><h2>Services and pricing</h2><p>Select what to include. Only selected services appear on your document.</p></div>
+      </div>
+      <div class="service-list">
+        <article class="service-option">
+          <label class="service-toggle" for="include_hosting">
+            <input id="include_hosting" type="checkbox" name="include_hosting" checked>
+            <span class="custom-check" aria-hidden="true"></span>
+            <span class="service-symbol">H</span>
+            <span class="service-copy"><strong>Website hosting</strong><small>Reliable hosting for your website</small></span>
+          </label>
+          <div class="service-fields" data-service-fields="include_hosting">
+            <div class="field"><label for="packageName">Hosting plan</label><input id="packageName" type="text" name="package_name" placeholder="e.g. Business Hosting"></div>
+            <div class="field"><label for="hostingPeriod">Service period</label><input id="hostingPeriod" type="text" name="period" placeholder="e.g. 12 months"></div>
+            <div class="field price-field"><label for="hostingFee">Price <span class="currency-code">RWF</span></label><input id="hostingFee" type="number" name="hosting_fee" min="0" step="0.01" value="0" inputmode="decimal"></div>
+          </div>
+        </article>
+        <article class="service-option">
+          <label class="service-toggle" for="include_domain">
+            <input id="include_domain" type="checkbox" name="include_domain">
+            <span class="custom-check" aria-hidden="true"></span>
+            <span class="service-symbol">D</span>
+            <span class="service-copy"><strong>Domain registration</strong><small>Register or renew the client's domain</small></span>
+          </label>
+          <div class="service-fields is-disabled" data-service-fields="include_domain">
+            <div class="field"><label for="domainName">Domain name</label><input id="domainName" type="text" name="domain_name" placeholder="e.g. example.com" disabled></div>
+            <div class="field"><label for="domainPeriod">Registration period</label><input id="domainPeriod" type="text" name="domain_period" placeholder="e.g. 1 year" disabled></div>
+            <div class="field price-field"><label for="domainFee">Price <span class="currency-code">RWF</span></label><input id="domainFee" type="number" name="domain_fee" min="0" step="0.01" value="0" inputmode="decimal" disabled></div>
+          </div>
+        </article>
+        <article class="service-option">
+          <label class="service-toggle" for="include_ssl">
+            <input id="include_ssl" type="checkbox" name="include_ssl">
+            <span class="custom-check" aria-hidden="true"></span>
+            <span class="service-symbol">S</span>
+            <span class="service-copy"><strong>SSL certificate</strong><small>Secure the website with HTTPS</small></span>
+          </label>
+          <div class="service-fields is-disabled" data-service-fields="include_ssl">
+            <div class="field ssl-description"><label for="sslDescription">Certificate / service</label><input id="sslDescription" type="text" name="ssl_description" value="SSL certificate" disabled></div>
+            <div class="field"><label for="sslPeriod">Service period</label><input id="sslPeriod" type="text" name="ssl_period" placeholder="e.g. 1 year" disabled></div>
+            <div class="field price-field"><label for="sslFee">Price <span class="currency-code">RWF</span></label><input id="sslFee" type="number" name="ssl_fee" min="0" step="0.01" value="0" inputmode="decimal" disabled></div>
+          </div>
+        </article>
+      </div>
+      <div class="custom-services">
+        <div class="custom-services-heading">
+          <div><strong>Additional services</strong><small>Add any service that is not listed above.</small></div>
+          <button type="button" class="btn btn-secondary add-service-btn" id="addCustomService">+ Add service</button>
+        </div>
+        <div id="customServicesList" class="custom-services-list" aria-live="polite"></div>
+      </div>
+      <div class="total-bar">
+        <span><small>DOCUMENT TOTAL</small><strong id="totalCaption">Selected services</strong></span>
+        <strong class="total-value" id="documentTotal" aria-live="polite">RWF 0</strong>
+      </div>
+      <div class="payment-grid">
+        <div class="field">
+          <label for="paymentMethod">Payment method <span class="optional">Optional</span></label>
+          <input id="paymentMethod" type="text" name="payment_method" placeholder="Bank transfer, Mobile Money, cash...">
+        </div>
+        <div class="field">
+          <label for="paymentReference">Payment reference <span class="optional">Optional</span></label>
+          <input id="paymentReference" type="text" name="account_wallet" placeholder="Account or transaction reference">
+        </div>
+      </div>
+    </section>
+
+    <section class="card contract-fields" id="contractSection" hidden>
+      <div class="section-heading">
+        <span class="step-number">05</span>
+        <div><h2>Agreement terms</h2><p>Include service conditions when creating a contract.</p></div>
+      </div>
+      <div class="field">
+        <label for="terms">Terms and conditions</label>
+        <textarea id="terms" name="terms" rows="5">1. The Service Provider will deliver the services selected in this agreement.
+2. The Client agrees to pay the stated amount in the selected currency.
+3. Services will be activated after payment is received.
+4. The Client is responsible for renewing services before their expiry date.
+5. Changes to this agreement must be confirmed by both parties.</textarea>
+      </div>
+    </section>
+
+    <section class="card authorization-card">
+      <div class="section-heading">
+        <span class="step-number">06</span>
+        <div><h2>Company authorization</h2><p>Upload the company signature and optional stamp for the PDF.</p></div>
+      </div>
+      <div class="signature-grid">
+        <div class="upload-panel">
+          <div class="upload-panel-heading"><span class="upload-panel-icon">✍</span><span><strong>Company signature</strong><small>Authorized representative signature</small></span></div>
+          <label class="file-drop" for="agencySignature">
+            <span class="drop-icon">↑</span><strong>Choose signature image</strong><small>PNG recommended · transparent background</small>
+            <input id="agencySignature" type="file" name="agency_signature" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp">
+          </label>
+          <span class="file-name" data-file-name="agencySignature">No file selected</span>
+        </div>
+        <div class="upload-panel stamp-panel">
+          <div class="upload-panel-heading"><span class="upload-panel-icon">◉</span><span><strong>Company stamp / seal</strong><small>Official provider authorization</small></span></div>
+          <label class="file-drop" for="agencyStamp">
+            <span class="drop-icon">↑</span><strong>Choose stamp image</strong><small>PNG recommended · transparent background</small>
+            <input id="agencyStamp" type="file" name="agency_stamp" accept=".png,.jpg,.jpeg,.webp,image/png,image/jpeg,image/webp">
+          </label>
+          <span class="file-name" data-file-name="agencyStamp">No file selected</span>
+        </div>
+      </div>
+      <div class="field officer-field">
+        <label for="agencyOfficer">Authorized provider representative <span class="optional">Optional</span></label>
+        <input id="agencyOfficer" type="text" name="agency_officer" placeholder="Name and title">
+      </div>
+      <p class="upload-note">Company signature images are fitted within a 48 × 18 mm area. Stamps are fitted proportionally within a 30 × 30 mm area. The client is identified by the name and contact details entered above.</p>
+    </section>
+
+    <footer class="form-footer">
+      <div><strong>Ready to create your document?</strong><span>We'll prepare a print-ready PDF for you.</span></div>
+      <button type="submit" class="btn btn-primary" id="submitBtn"><span>Generate PDF</span><span aria-hidden="true">→</span></button>
+    </footer>
+  </form>
+</main>
+<script src="{{ url_for('static', filename='js/app.js', v=5) }}" defer></script>
+</body>
+</html>
